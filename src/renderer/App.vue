@@ -61,9 +61,9 @@
 import { defineComponent, ref, onMounted } from '@vue/composition-api'
 import { message } from 'ant-design-vue'
 
-import { remote, ipcRenderer, clipboard } from 'electron'
 import { IpcChannel } from '../main/constants'
 
+const { remote, ipcRenderer, clipboard } = window.require('electron')
 const { app, Menu, MenuItem } = remote
 
 // const isMac = process.platform === 'darwin'

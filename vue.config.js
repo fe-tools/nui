@@ -13,6 +13,9 @@ module.exports = {
   pluginOptions: {
     electronBuilder: {
       mainProcessFile: 'src/main/index.js',
+      builderOptions: {
+        asar: false
+      }
     }
   }
 }
