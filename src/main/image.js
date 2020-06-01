@@ -5,7 +5,7 @@ import crypto from 'crypto'
 
 import { name } from '../../package.json'
 
-import { ipcMain, dialog } from 'electron'
+import { app, ipcMain, dialog, Menu, shell } from 'electron'
 import { IpcChannel } from './constants'
 
 import imagemin from 'imagemin'
@@ -17,13 +17,59 @@ const tmpdir = path.resolve(os.tmpdir(), name)
 
 const cleanTmpDir = () => fs.emptyDirSync(tmpdir)
 
+const initMenu = () => {
+  const isMac = process.platform === 'darwin'
+  const template = [
+    ...(isMac ? [{
+      label: app.name,
+      submenu: [
+        { label: '关于', role: 'about' },
+        { type: 'separator' },
+        { label: '服务', role: 'services' },
+        { type: 'separator' },
+        { label: '隐藏', role: 'hide' },
+        { label: '隐藏其他应用', role: 'hideothers' },
+        { label: '显示全部', role: 'unhide' },
+        { type: 'separator' },
+        { label: '退出', role: 'quit' }
+      ]
+    }] : []),
+    {
+      label: '窗口',
+      submenu: [
+        { label: '最小化', role: 'minimize' },
+        { label: '缩放', role: 'zoom' },
+        ...(isMac ? [
+          { type: 'separator' },
+          { label: '前置所有窗口', role: 'front' },
+        ] : [
+          { role: 'close' }
+        ])
+      ]
+    },
+    {
+      role: 'help',
+      label: '帮助',
+      submenu: [
+        {
+          label: '帮助',
+          click: async () => await shell.openExternal('https://electronjs.org')
+        }
+      ]
+    }
+  ]
+
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
+}
+
 const minifyImage = file => {
   return new Promise((resolve, reject) => {
     imagemin([ file ], {
       destination: tmpdir,
       plugins: [
         imageminMozjpeg({
-          quality: 80
+          quality: 85
         })
       ]
     }).then(res => resolve(res[0]))
@@ -48,6 +94,8 @@ const saveImage = (win, currentFile, tinyFile) => {
 
 export const imageBootstrap = (win) => {
   cleanTmpDir()
+
+  initMenu()
 
   ipcMain.on(IpcChannel.FILE_ADD, async (event, file) => {
     try {
