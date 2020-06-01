@@ -5,7 +5,7 @@ import crypto from 'crypto'
 
 import { name } from '../../package.json'
 
-import { ipcMain } from 'electron'
+import { ipcMain, dialog } from 'electron'
 import { IpcChannel } from './constants'
 
 import imagemin from 'imagemin'
@@ -35,7 +35,18 @@ const putImageToOss = file => {
   return OSSClient.put(file.hash + file.ext, file.path)
 }
 
-export const imageBootstrap = () => {
+const saveImage = (win, currentFile, tinyFile) => {
+  return dialog.showSaveDialog(win, {
+    title: '保存文件',
+    defaultPath: currentFile.path,
+    filters: [{
+      name: currentFile.name,
+      extensions: [ tinyFile.ext ],
+    }]
+  })
+}
+
+export const imageBootstrap = (win) => {
   cleanTmpDir()
 
   ipcMain.on(IpcChannel.FILE_ADD, async (event, file) => {
@@ -65,6 +76,15 @@ export const imageBootstrap = () => {
       putImageToOss(file)
         .then(res => event.reply(IpcChannel.FILE_PUT_SUCCESS, res.url))
         .catch(err=> event.reply(IpcChannel.FILE_PUT_ERROR, err))
+    } catch (err) {
+      event.reply(IpcChannel.MAIN_ERROR, err.toString(), err.stack)
+    }
+  })
+
+  ipcMain.on(IpcChannel.FILE_SAVE, async (event, currentFile, tinyFile) => {
+    try {
+      const { filePath } = await saveImage(win, currentFile, tinyFile)
+      fs.copy(tinyFile.path, filePath)
     } catch (err) {
       event.reply(IpcChannel.MAIN_ERROR, err.toString(), err.stack)
     }

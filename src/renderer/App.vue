@@ -151,10 +151,14 @@ export default defineComponent({
       currentfile.value = {}
     }
 
-    const handleFileSave = (current, tiny) => {
-      const currentPath = currentfile.value.path
-      const tinyPath = tinyfile.value.path
-      ipcRenderer.send(IpcChannel.FILE_SAVE, currentPath, tinyPath)
+    const handleFileSave = () => {
+      ipcRenderer.send(IpcChannel.FILE_SAVE,{
+        name: currentfile.value.name,
+        path: currentfile.value.path
+      }, {
+        path: tinyfile.value.path,
+        ext: tinyfile.value.ext
+      })
     }
 
     const pictureRef = ref(null)
