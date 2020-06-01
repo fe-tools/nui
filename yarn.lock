@@ -3168,7 +3168,7 @@ execa@^1.0.0:
     signal-exit "^3.0.0"
     strip-eof "^1.0.0"
 
-execa@^3.0.0, execa@^3.3.0:
+execa@^3.3.0:
   version "3.4.0"
   resolved "https://registry.npm.taobao.org/execa/download/execa-3.4.0.tgz?cache=0&sync_timestamp=1590156534762&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fexeca%2Fdownload%2Fexeca-3.4.0.tgz#c08ed4550ef65d858fac269ffc8572446f37eb89"
   integrity sha1-wI7UVQ72XYWPrCaf/IVyRG8364k=
@@ -3181,6 +3181,21 @@ execa@^3.0.0, execa@^3.3.0:
     npm-run-path "^4.0.0"
     onetime "^5.1.0"
     p-finally "^2.0.0"
+    signal-exit "^3.0.2"
+    strip-final-newline "^2.0.0"
+
+execa@^4.0.0:
+  version "4.0.2"
+  resolved "https://registry.npm.taobao.org/execa/download/execa-4.0.2.tgz#ad87fb7b2d9d564f70d2b62d511bee41d5cbb240"
+  integrity sha1-rYf7ey2dVk9w0rYtURvuQdXLskA=
+  dependencies:
+    cross-spawn "^7.0.0"
+    get-stream "^5.0.0"
+    human-signals "^1.1.1"
+    is-stream "^2.0.0"
+    merge-stream "^2.0.0"
+    npm-run-path "^4.0.0"
+    onetime "^5.1.0"
     signal-exit "^3.0.2"
     strip-final-newline "^2.0.0"
 
@@ -9012,14 +9027,14 @@ vm-browserify@^1.0.1:
   resolved "https://registry.npm.taobao.org/vm-browserify/download/vm-browserify-1.1.2.tgz#78641c488b8e6ca91a75f511e7a3b32a86e5dda0"
   integrity sha1-eGQcSIuObKkadfUR56OzKobl3aA=
 
-vue-cli-plugin-electron-builder@^2.0.0-beta.6:
-  version "2.0.0-beta.6"
-  resolved "https://registry.npm.taobao.org/vue-cli-plugin-electron-builder/download/vue-cli-plugin-electron-builder-2.0.0-beta.6.tgz#cac6b79895b133f882d397166b43e92142a34202"
-  integrity sha1-ysa3mJWxM/iC05cWa0PpIUKjQgI=
+vue-cli-plugin-electron-builder@^2.0.0-rc.1:
+  version "2.0.0-rc.1"
+  resolved "https://registry.npm.taobao.org/vue-cli-plugin-electron-builder/download/vue-cli-plugin-electron-builder-2.0.0-rc.1.tgz#cabea59d6afe4853ec8666469869f10f91254223"
+  integrity sha1-yr6lnWr+SFPshmZGmGnxD5ElQiM=
   dependencies:
     chokidar "^3.0.2"
     electron-builder "^22.2.0"
-    execa "^3.0.0"
+    execa "^4.0.0"
     friendly-errors-webpack-plugin "^1.7.0"
     fs-extra "^8.1.0"
     lodash.merge "^4.6.1"
@@ -9034,6 +9049,7 @@ vue-cli-plugin-electron-builder@^2.0.0-beta.6:
     unzip-crx "^0.2.0"
     webpack "^4.18.0"
     webpack-chain "^6.0.0"
+    webpack-merge "^4.2.2"
     yargs "^14.0.0"
 
 vue-hot-reload-api@^2.3.0:
