@@ -45,6 +45,7 @@
 
     <a-col class="fix-col">
       <a-button
+        v-if="Object.keys(imageConfigs).length > 0"
         type="primary"
         icon="cloud-upload"
         :disabled="!currentfile.type"
@@ -54,12 +55,15 @@
         {{ (currentfile.type && !readToUpload)? '压缩图片...': '上传' }}
       </a-button>
     </a-col>
+
+    <Setting v-model="showSetting" :data="imageConfigs" @on-submit="handleSettingSubmit"></Setting>
   </a-row>
 </template>
 
 <script>
-import { defineComponent, ref, onMounted } from '@vue/composition-api'
+import { defineComponent, ref, reactive, onMounted } from '@vue/composition-api'
 import { message } from 'ant-design-vue'
+import Setting from './setting'
 
 import { IpcChannel } from '../main/constants'
 
@@ -67,11 +71,17 @@ const { remote, ipcRenderer, clipboard } = window.require('electron')
 const { Menu, MenuItem } = remote
 
 export default defineComponent({
+  components: { Setting },
   setup() {
+    const imageConfigs = ref({})
+
     const readToUpload = ref(true)
     const uploading = ref(false)
     const currentfile = ref({})
     const tinyfile = ref({})
+
+
+    const showSetting = ref(false)
 
     /**
      * https://gist.github.com/lanqy/5193417
@@ -113,6 +123,11 @@ export default defineComponent({
       })
     }
 
+    const beforSettingClose = () => {
+      console.log('before close')
+      showSetting.value = false
+    }
+
     const pictureRef = ref(null)
     onMounted(() => {
       const menu = new Menu()
@@ -138,7 +153,20 @@ export default defineComponent({
       ipcRenderer.send(IpcChannel.FILE_PUT, tinyfile.value)
     }
 
+    const handleSettingSubmit = (data) => {
+      console.log('修改配置')
+      ipcRenderer.send(IpcChannel.CONFIGS_MODIFY, data)
+    }
+
     onMounted(() => {
+      ipcRenderer.send(IpcChannel.VIEW_READY)
+
+      ipcRenderer.on(IpcChannel.ON_CONFIGS_MODIFY, (_, data) => {
+        console.log(data)
+        if (data.imageConfigs) imageConfigs.value = data.imageConfigs
+        console.log('接收配置')
+      })
+
       ipcRenderer.on(IpcChannel.FILE_DEAL, (_, file) => {
         tinyfile.value = file
         readToUpload.value = true
@@ -156,19 +184,30 @@ export default defineComponent({
 
       ipcRenderer.on(IpcChannel.FILE_PUT_ERROR, (_, error) => {
         console.log('上传失败', error)
+        message.error(`上传失败: ${error}`)
+        uploading.value = false
       })
 
       ipcRenderer.on(IpcChannel.MAIN_ERROR, (_,...message) => {
         console.log('error', message)
       })
+
+      ipcRenderer.on(IpcChannel.SETTING_SHOW, () => {
+        console.log('receive message')
+        if (!showSetting.value) {
+          showSetting.value = true
+        }
+      })
     })
 
     return {
+      imageConfigs,
       pictureRef,
       formateFileSize,
       readToUpload, uploading,
       currentfile, tinyfile,
-      handleBeforeUpload, handleFileRemove, handlePutToOSS
+      handleBeforeUpload, handleFileRemove, handlePutToOSS,
+      showSetting, beforSettingClose, handleSettingSubmit
     }
   }
 })

@@ -1,12 +1,15 @@
 import OSS from 'ali-oss'
 
-const OSSClient = new OSS({
-  internal: false,
-  region: process.env.VUE_APP_ALI_OSS_REGION,
-  accessKeyId: process.env.VUE_APP_ALI_OSS_ACCESS_KEY_ID,
-  accessKeySecret: process.env.VUE_APP_ALI_OSS_ACCESS_KEY_SECRET,
-  bucket: process.env.VUE_APP_ALI_OSS_BUCKET,
-  secure: true
-})
+let OSSClient = null
 
-export { OSSClient }
+const setOSSClient = (configs) => {
+  const client = new OSS({
+    internal: false,
+    secure: true,
+    ...configs
+  })
+
+  OSSClient = client
+}
+
+export { OSSClient, setOSSClient }

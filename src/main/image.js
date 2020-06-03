@@ -3,7 +3,7 @@ import path from 'path'
 import fs from 'fs-extra'
 import crypto from 'crypto'
 
-import { name } from '../../package.json'
+import { name, version } from '../../package.json'
 
 import { app, ipcMain, dialog, Menu, shell } from 'electron'
 import { IpcChannel } from './constants'
@@ -11,19 +11,41 @@ import { IpcChannel } from './constants'
 import imagemin from 'imagemin'
 import imageminMozjpeg from 'imagemin-mozjpeg'
 
-import { OSSClient } from './ali-oss'
+import { OSSClient, setOSSClient } from './ali-oss'
+
+const configs = {}
 
 const tmpdir = path.resolve(os.tmpdir(), name)
+const rcpath = path.resolve(os.homedir(), `.${name}rc`)
+
+const readRcfile = (path) => {
+  if (fs.existsSync(path)) {
+    Object.assign(configs, fs.readJSONSync(path))
+  } else {
+    fs.writeJSONSync(path, {
+      name: name,
+      version: version
+    }, { spaces: 2 })
+  }
+}
+
+const writeRcfile = (path, data) => {
+  if (fs.existsSync(path)) {
+    fs.writeJSONSync(path, data, { spaces: 2 })
+  }
+}
 
 const cleanTmpDir = () => fs.emptyDirSync(tmpdir)
 
-const initMenu = () => {
+const initMenu = (win) => {
   const isMac = process.platform === 'darwin'
   const template = [
     ...(isMac ? [{
       label: app.name,
       submenu: [
         { label: '关于', role: 'about' },
+        { type: 'separator' },
+        { label: '设置', click: () => showSetting(win)},
         { type: 'separator' },
         { label: '服务', role: 'services' },
         { type: 'separator' },
@@ -77,6 +99,10 @@ const initMenu = () => {
   Menu.setApplicationMenu(menu)
 }
 
+const showSetting = (win) => {
+  win.webContents.send(IpcChannel.SETTING_SHOW)
+}
+
 const minifyImage = file => {
   return new Promise((resolve, reject) => {
     imagemin([ file ], {
@@ -107,9 +133,31 @@ const saveImage = (win, currentFile, tinyFile) => {
 }
 
 export const imageBootstrap = (win) => {
+
+  readRcfile(rcpath)
+
   cleanTmpDir()
 
-  initMenu()
+  initMenu(win)
+
+  if (configs.imageConfigs) {
+    setOSSClient(configs.imageConfigs)
+  }
+
+  ipcMain.on(IpcChannel.VIEW_READY, (event) => {
+    event.reply(IpcChannel.ON_CONFIGS_MODIFY, configs)
+  })
+
+  ipcMain.on(IpcChannel.CONFIGS_MODIFY, (event, data) => {
+    Object.assign(configs, { imageConfigs: data })
+    writeRcfile(rcpath, configs)
+    try {
+      setOSSClient(data)
+    } catch(err) {
+      console.log('=====', err)
+    }
+    event.reply(IpcChannel.ON_CONFIGS_MODIFY, configs)
+  })
 
   ipcMain.on(IpcChannel.FILE_ADD, async (event, file) => {
     try {

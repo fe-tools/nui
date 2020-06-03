@@ -82,9 +82,9 @@ app.on('ready', async () => {
 
   }
 
-  imageBootstrap(win)
-
   createWindow()
+
+  imageBootstrap(win)
 })
 
 // Exit cleanly on request from parent process in development mode.
