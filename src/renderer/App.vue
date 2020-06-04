@@ -16,10 +16,18 @@
       <div class="picture" ref="pictureRef">
         <div class="picture__cover">
           <template v-if="!readToUpload">
-            <img v-if="currentfile.path" :src="`file://${ currentfile.path }`">
+            <img
+              v-if="currentfile.path"
+              @click="handleImagePreview(currentfile.path)"
+              :src="`file://${ currentfile.path }`"
+            >
           </template>
           <template v-else>
-            <img v-if="currentfile.path" :src="`file://${ tinyfile.path }`">
+            <img
+              v-if="currentfile.path"
+              @click="handleImagePreview(tinyfile.path)"
+              :src="`file://${ tinyfile.path }`"
+            >
           </template>
         </div>
         <div class="picture__main">
@@ -67,7 +75,7 @@ import Setting from './setting'
 
 import { IpcChannel } from '../main/constants'
 
-const { remote, ipcRenderer, clipboard } = window.require('electron')
+const { remote, ipcRenderer, clipboard, shell } = window.require('electron')
 const { Menu, MenuItem } = remote
 
 export default defineComponent({
@@ -158,6 +166,10 @@ export default defineComponent({
       ipcRenderer.send(IpcChannel.CONFIGS_MODIFY, data)
     }
 
+    const handleImagePreview = (path) => {
+      shell.openItem(path)
+    }
+
     onMounted(() => {
       ipcRenderer.send(IpcChannel.VIEW_READY)
 
@@ -207,7 +219,8 @@ export default defineComponent({
       readToUpload, uploading,
       currentfile, tinyfile,
       handleBeforeUpload, handleFileRemove, handlePutToOSS,
-      showSetting, beforSettingClose, handleSettingSubmit
+      showSetting, beforSettingClose, handleSettingSubmit,
+      handleImagePreview
     }
   }
 })
@@ -243,7 +256,7 @@ export default defineComponent({
     img {
       width: auto;
       height: 100%;
-      cursor: move;
+      cursor: zoom-in;
     }
   }
   &__main {
