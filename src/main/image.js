@@ -10,6 +10,7 @@ import { IpcChannel } from './constants'
 
 import imagemin from 'imagemin'
 import imageminMozjpeg from 'imagemin-mozjpeg'
+import imageminPngquant from 'imagemin-pngquant'
 
 import { OSSClient, setOSSClient } from './ali-oss'
 
@@ -108,6 +109,9 @@ const minifyImage = file => {
     imagemin([ file ], {
       destination: tmpdir,
       plugins: [
+        imageminPngquant({
+          quality: [0.6, 0.8]
+        }),
         imageminMozjpeg({
           quality: 85
         })
@@ -161,7 +165,10 @@ export const imageBootstrap = (win) => {
 
   ipcMain.on(IpcChannel.FILE_ADD, async (event, file) => {
     try {
+      const begin = new Date().getTime()
       const { data, destinationPath } = await minifyImage(file.path)
+      const end = new Date().getTime()
+      console.log(end - begin)
 
       const md5 = crypto.createHash('md5')
       const hash = md5.update(data).digest('hex')
@@ -177,6 +184,7 @@ export const imageBootstrap = (win) => {
         ext: ext
       })
     } catch (err) {
+      console.log(err)
       event.reply(IpcChannel.MAIN_ERROR, err.toString(), err.stack)
     }
   })
