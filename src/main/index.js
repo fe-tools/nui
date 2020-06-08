@@ -1,5 +1,6 @@
 'use strict'
 
+import path from 'path'
 import { app, protocol, BrowserWindow } from 'electron'
 import {
   createProtocol,
@@ -22,6 +23,7 @@ function createWindow () {
   win = new BrowserWindow({
     width: isDevelopment? 675: 375,
     height: 667,
+    icon: path.join(__static, 'icon.png'),
     resizable: false,
     maximizable: false,
     fullscreenable: false,
