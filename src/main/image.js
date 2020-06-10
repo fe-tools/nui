@@ -8,9 +8,10 @@ import { name, version } from '../../package.json'
 import { app, ipcMain, dialog, Menu, shell } from 'electron'
 import { IpcChannel } from './constants'
 
-import imagemin from 'imagemin'
-import imageminMozjpeg from 'imagemin-mozjpeg'
-import imageminPngquant from 'imagemin-pngquant'
+import fileType from 'file-type'
+import { execProcessor } from './utils'
+import mozjpeg from 'mozjpeg'
+import pngquant from 'pngquant-bin'
 
 import { OSSClient, setOSSClient } from './ali-oss'
 
@@ -96,29 +97,34 @@ const initMenu = (win) => {
     }
   ]
 
-  const menu = Menu.buildFromTemplate(template)
-  Menu.setApplicationMenu(menu)
+  // const menu = Menu.buildFromTemplate(template)
+  // Menu.setApplicationMenu(menu)
 }
 
 const showSetting = (win) => {
   win.webContents.send(IpcChannel.SETTING_SHOW)
 }
 
-const minifyImage = file => {
-  return new Promise((resolve, reject) => {
-    imagemin([ file ], {
-      destination: tmpdir,
-      plugins: [
-        imageminPngquant({
-          quality: [0.6, 0.8]
-        }),
-        imageminMozjpeg({
-          quality: 85
-        })
-      ]
-    }).then(res => resolve(res[0]))
-      .catch(err => reject(err))
-  })
+const minifyImage = async file => {
+  try {
+    let res = null
+    const { mime } = await fileType.fromFile(file.path)
+
+    switch (mime) {
+      case 'image/jpeg':
+        res = await execProcessor(mozjpeg, ['-quality', 85], await fs.readFile(file.path), path.resolve(tmpdir, file.name))
+        break
+      case 'image/png':
+        res = await execProcessor(pngquant, ['--quality', '60-80', '-'], await fs.readFile(file.path), path.resolve(tmpdir, file.name))
+        break
+      default:
+        break
+    }
+
+    return Promise.resolve(res)
+  } catch (err) {
+    return Promise.reject(err)
+  }
 }
 
 const putImageToOss = file => {
@@ -166,7 +172,7 @@ export const imageBootstrap = (win) => {
   ipcMain.on(IpcChannel.FILE_ADD, async (event, file) => {
     try {
       const begin = new Date().getTime()
-      const { data, destinationPath } = await minifyImage(file.path)
+      const { data, destinationPath } = await minifyImage(file)
       const end = new Date().getTime()
       console.log(end - begin)
 

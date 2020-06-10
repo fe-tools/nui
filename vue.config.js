@@ -14,8 +14,11 @@ module.exports = {
     electronBuilder: {
       mainProcessFile: 'src/main/index.js',
       builderOptions: {
-        asar: false
-      }
+        asar: true
+      },
+      externals: [
+        'mozjpeg'
+      ]
     }
   }
 }
