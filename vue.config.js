@@ -1,4 +1,7 @@
 const path = require('path')
+const glob = require('glob')
+const PermissionsOutputPlugin = require('webpack-permissions-plugin')
+
 const resolve = dir => path.join(__dirname, './', dir)
 
 module.exports = {
@@ -7,6 +10,11 @@ module.exports = {
     config.entry.app = path.join(__dirname, 'src/renderer/main.js')
   },
   chainWebpack: config => {
+    config.plugin('file-permissions')
+      .use(PermissionsOutputPlugin, [{
+        buildFiles: glob.sync(path.resolve(__dirname, 'dist/vendor/**/*'))
+      }])
+
     config.resolve.alias
       .set('@', resolve('src/renderer/main/'))
   },
@@ -14,11 +22,17 @@ module.exports = {
     electronBuilder: {
       mainProcessFile: 'src/main/index.js',
       builderOptions: {
-        asar: true
+        asar: true,
+        asarUnpack: [
+          'vendor' 
+        ]
       },
-      externals: [
-        'mozjpeg'
-      ]
+      chainWebpackMainProcess: config => {
+        config.plugin('file-permissions')
+          .use(PermissionsOutputPlugin, [{
+            buildFiles: glob.sync(path.resolve(__dirname, 'dist_electron/bundled/vendor/**/*'))
+          }])
+      }
     }
   }
 }

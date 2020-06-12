@@ -9,10 +9,7 @@ import { app, ipcMain, dialog, Menu, shell } from 'electron'
 import { IpcChannel } from './constants'
 
 import fileType from 'file-type'
-import { execProcessor } from './utils'
-import mozjpeg from 'mozjpeg'
-import pngquant from 'pngquant-bin'
-
+import { execProcessor, mozjpeg, pngquant } from './utils'
 import { OSSClient, setOSSClient } from './ali-oss'
 
 const configs = {}
@@ -97,8 +94,8 @@ const initMenu = (win) => {
     }
   ]
 
-  // const menu = Menu.buildFromTemplate(template)
-  // Menu.setApplicationMenu(menu)
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
 }
 
 const showSetting = (win) => {
@@ -115,7 +112,8 @@ const minifyImage = async file => {
         res = await execProcessor(mozjpeg, ['-quality', 85], await fs.readFile(file.path), path.resolve(tmpdir, file.name))
         break
       case 'image/png':
-        res = await execProcessor(pngquant, ['--quality', '60-80', '-'], await fs.readFile(file.path), path.resolve(tmpdir, file.name))
+        // pngquant(file.path, path.resolve(tmpdir, file.name), {})
+        res = await execProcessor(pngquant, ['-', '--quality', '60-80'], await fs.readFile(file.path), path.resolve(tmpdir, file.name))
         break
       default:
         break
@@ -156,6 +154,8 @@ export const imageBootstrap = (win) => {
 
   ipcMain.on(IpcChannel.VIEW_READY, (event) => {
     event.reply(IpcChannel.ON_CONFIGS_MODIFY, configs)
+    event.reply(IpcChannel.ON_CONFIGS_MODIFY, mozjpeg)
+    event.reply(IpcChannel.ON_CONFIGS_MODIFY, pngquant)
   })
 
   ipcMain.on(IpcChannel.CONFIGS_MODIFY, (event, data) => {
