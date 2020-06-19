@@ -73,7 +73,7 @@ import { defineComponent, ref, reactive, onMounted } from '@vue/composition-api'
 import { message } from 'ant-design-vue'
 import Setting from './setting'
 
-import { IpcChannel } from '../main/constants'
+import { IpcChannel } from '../main/image/constants'
 
 const { remote, ipcRenderer, clipboard, shell } = window.require('electron')
 const { Menu, MenuItem } = remote
