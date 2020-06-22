@@ -35,7 +35,7 @@
           <div class="picture__summary">
             <span :class="readToUpload? 'f2': 'f1'">{{ formateFileSize(currentfile.size) }}</span>
             <span v-if="readToUpload" class="f3">
-              {{ formateFileSize(tinyfile.size) }}({{ (tinyfile.size / currentfile.size).toFixed(2) * 100 + '%' }})
+              {{ formateFileSize(tinyfile.size) }}({{ ((tinyfile.size / currentfile.size) * 100).toFixed(2) + '%' }})
             </span>
             <span class="f3">
               <a-icon v-if="readToUpload" style="color: #52c41a;" type="check" />
