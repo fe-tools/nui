@@ -63,26 +63,26 @@ export const imageBootstrap = win => {
   ipcMain.on(IpcChannel.FILE_PUT, (event, file) => {
     try {
       putImageToOss(file)
-        .then(res => event.reply(IpcChannel.FILE_PUT_SUCCESS, res.url))
-        .catch(err=> event.reply(IpcChannel.FILE_PUT_ERROR, err))
+        .then(res => event.reply(IpcChannel.FILE_PUT_RESULT, res.url))
+        .catch(err=> event.reply(IpcChannel.FILE_PUT_RESULT, '', err))
     } catch (err) {
       event.reply(IpcChannel.MAIN_ERROR, err.toString(), err.stack)
     }
   })
 
   // handle image save
-  ipcMain.on(IpcChannel.FILE_SAVE, async (event, currentFile, tinyFile) => {
+  ipcMain.on(IpcChannel.FILE_SAVE, async (event, source, target) => {
     try {
       const { filePath } = await dialog.showSaveDialog(win, {
         title: '保存文件',
-        defaultPath: currentFile.path,
+        defaultPath: source.path,
         filters: [{
-          name: currentFile.name,
-          extensions: [ tinyFile.ext ],
+          name: source.name,
+          extensions: [ target.ext ],
         }]
       })
 
-      fs.copy(tinyFile.path, filePath)
+      fs.copy(target.path, filePath)
     } catch (err) {
       event.reply(IpcChannel.MAIN_ERROR, err.toString(), err.stack)
     }
